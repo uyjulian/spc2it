@@ -152,9 +152,9 @@ int main(int argc, char **argv)
 		SNDMix(); // run the SPC
 
 
-		if (SNDratecnt >= 100)
+		if (SNDratecnt >= SPCUpdateRate)
 		{
-			SNDratecnt -= 100;
+			SNDratecnt -= SPCUpdateRate;
 			seconds++; // count number of seconds
 			printf("%f ", (f64)seconds / limit);
 			fflush(stdout);

@@ -253,7 +253,7 @@ s32 ITWrite(char *fn) // Write the final IT file
 	fHeader->GlobalVolume = 128; // Global volume
 	fHeader->MixVolume = 100; // Mix volume
 	fHeader->InitialSpeed = 1; // Initial speed (fastest)
-	fHeader->InitialTempo = (u8)(100 * 1.25); // Initial tempo (determined by update rate)
+	fHeader->InitialTempo = (u8)(SPCUpdateRate * 1.25); // Initial tempo (determined by update rate)
 	fHeader->PanningSeperation = 128; // Stereo separation (max)
 	for (i = 0; i < 8; i++)
 	{ // Channel pan: Set 8 channels to left

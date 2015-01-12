@@ -69,10 +69,10 @@ static s32 decode_samp(u16 start, sndsamp **sp)
 				output += (s32)(((f64)s->buf[sampptr - 1] * 61 / 32) - ((f64)s->buf[sampptr - 2] * 15 / 16));
 			else if (filter == 3)
 				output += (s32)(((f64)s->buf[sampptr - 1] * 115 / 64) - ((f64)s->buf[sampptr - 2] * 13 / 16));
-			if (output > 32000)
-				output = 32000;
-			else if (output < -32001)
-				output = -32001;
+			if (output > 32767)
+				output = 32767;
+			else if (output < -32768)
+				output = -32768;
 			s->buf[sampptr++] = output;
 			output = src[brrptr] & 0x0F;
 			if (output > 7)
@@ -84,10 +84,10 @@ static s32 decode_samp(u16 start, sndsamp **sp)
 				output += (s32)(((f64)s->buf[sampptr - 1] * 61 / 32) - ((f64)s->buf[sampptr - 2] * 15 / 16));
 			else if (filter == 3)
 				output += (s32)(((f64)s->buf[sampptr - 1] * 115 / 64) - ((f64)s->buf[sampptr - 2] * 13 / 16));
-			if (output > 32000)
-				output = 32000;
-			else if (output < -32001)
-				output = -32001;
+			if (output > 32767)
+				output = 32767;
+			else if (output < -32768)
+				output = -32768;
 			s->buf[sampptr++] = output;
 		}
 	}
@@ -313,7 +313,7 @@ void SNDNoteOn(u8 v)
 				SNDkeys |= (1 << i);
 				pitch = (s32)(*(u16 *)&SPC_DSP[(i << 4) + 2]) << 3;
 				if (SNDsamples[cursamp]->freq == 0)
-					SNDsamples[cursamp]->freq = 32000;
+					SNDsamples[cursamp]->freq = pitch;
 				// figure ADSR/GAIN
 				adsr1 = SPC_DSP[(i << 4) + 5];
 				if (adsr1 & 0x80)
