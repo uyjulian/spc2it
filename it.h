@@ -5,7 +5,7 @@
 #ifndef IT_H
 #define IT_H
 
-#define NUM_PATT_BUFS 64
+#define NUM_PATT_BUFS 128
 
 #include "spc2ittypes.h"
 
@@ -24,7 +24,7 @@ void ITMix();
 #define EFFECT_E 5
 
 #define IT_PATTERN_TEMP_FILE_NAME "ittemp.tmp"
-#define IT_PATTERN_MAX 200 // The original Impulse Tracker has 200 patterns max
+#define IT_PATTERN_MAX 0xFD // The original Impulse Tracker has 200 patterns max
 #define IT_SAMPLE_MAX 99
 
 #define IT_MASK_NOTE 1 // 0001 (Note)

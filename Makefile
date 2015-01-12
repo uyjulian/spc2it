@@ -6,10 +6,10 @@ OBJDIR = ./_obj/
 EXENAME = spc2it
 OBJS = $(addprefix $(OBJDIR), emu.o it.o main.o sound.o spc700.o)
 COMMONFLAGS = 
-CFLAGS = $(COMMONFLAGS) -Wall 
-LDFLAGS = $(OBJS) -o $(EXENAME) $(COMMONFLAGS) -lm 
-LD = gcc $(LDFLAGS) 
-CC = gcc $(CFLAGS)
+CFLAGS = $(COMMONFLAGS) -Wall -g 
+LDFLAGS = $(OBJS) -o $(EXENAME) $(COMMONFLAGS) -lm -g 
+LD = clang $(LDFLAGS) 
+CC = clang $(CFLAGS)
 
 .PHONY: clean all
 

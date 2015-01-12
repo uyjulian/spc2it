@@ -27,8 +27,48 @@ void Usage()
 	printf("    -r xxx      Specify IT rows per pattern             [200 default]\n");
 }
 
+void CheckSizes() {
+	size_t u8Size = sizeof(u8);
+	if (!(u8Size == 1))
+		printf("Warning: wrong size u8: %lu \n", u8Size);
+	size_t u16Size = sizeof(u16);
+	if (!(u16Size == 2))
+		printf("Warning: wrong size u16: %lu \n", u16Size);
+	size_t u32Size = sizeof(u32);
+	if (!(u32Size == 4))
+		printf("Warning: wrong size u32: %lu \n", u32Size);
+	size_t u64Size = sizeof(u64);
+	if (!(u64Size == 8))
+		printf("Warning: wrong size u64: %lu \n", u64Size);
+	size_t s8Size = sizeof(s8);
+	if (!(s8Size == 1))
+		printf("Warning: wrong size s8: %lu \n", s8Size);
+	size_t s16Size = sizeof(s16);
+	if (!(s16Size == 2))
+		printf("Warning: wrong size s16: %lu \n", s16Size);
+	size_t s32Size = sizeof(s32);
+	if (!(s32Size == 4))
+		printf("Warning: wrong size s32: %lu \n", s32Size);
+	size_t s64Size = sizeof(s64);
+	if (!(s64Size == 8))
+		printf("Warning: wrong size s64: %lu \n", s64Size);
+	size_t ITFileHeaderSize = sizeof(ITFileHeader);
+	if (!(ITFileHeaderSize == 192))
+		printf("Warning: wrong size ITFileHeader: %lu \n", ITFileHeaderSize);
+	size_t ITFileSampleSize = sizeof(ITFileSample);
+	if (!(ITFileSampleSize == 80))
+		printf("Warning: wrong size ITFileSample: %lu \n", ITFileSampleSize);
+	size_t ITFilePatternSize = sizeof(ITFilePattern);
+	if (!(ITFilePatternSize == 8))
+		printf("Warning: wrong size ITFilePattern: %lu \n", ITFilePatternSize);
+	size_t SPCFileSize = sizeof(SPCFile);
+	if (!(SPCFileSize == 65920))
+		printf("Warning: wrong size SPCFile: %lu \n", SPCFileSize);
+}
+
 int main(int argc, char **argv)
 {
+	CheckSizes();
 	s32 seconds, limit, done;
 	char fn[PATH_MAX];
 	s32 i;

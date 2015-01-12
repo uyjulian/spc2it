@@ -47,50 +47,6 @@ typedef struct
 
 typedef struct
 {
-	u8 YValue;
-	u16 TickNumber;
-} ITFileNodePoint;
-
-typedef struct
-{
-	u8 Flags;
-	u8 NodeNumber;
-	u8 LoopBeginning;
-	u8 LoopEnd;
-	u8 SustainLoopBeginning;
-	u8 SustainLoopEnd;
-	ITFileNodePoint NodePoints[25];
-	u8 Padding;
-} ITFileEnvelope;
-
-typedef struct
-{
-	char magic[4]; // IMPI
-	char fileName[13]; // 8.3 DOS filename (including null termating)
-	u8 NewNoteAction;
-	u8 DuplicateCheckType;
-	u8 DuplicateCheckAction;
-	u16 FadeOut;
-	u8 PitchPanSeperation;
-	u8 PitchPanCenter;
-	u8 GlobalVolume;
-	u8 DefaultPan;
-	u8 RandomVolumeVariation;
-	u8 RandomPanningVariation;
-	u16 TrackerCreatorVersion; // The version of the tracker that created the IT file
-	u8 NumberOfSamples;
-	u8 Padding;
-	char InstrumentName[26];
-	u8 InitialFilterCutoff;
-	u8 InitialFilterResonance;
-	u8 MIDIChannel;
-	u8 MIDIProgram; //(Instrument)
-	u8 NoteSampleKeyboardTable[240];
-	ITFileEnvelope Envelopes[3];
-} ITFileInstrument;
-
-typedef struct
-{
 	char magic[4]; // IMPS
 	char fileName[13]; // 8.3 DOS filename (including null termating)
 	u8 GlobalVolume; // Global volume for sample
