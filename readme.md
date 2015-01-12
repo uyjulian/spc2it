@@ -19,7 +19,6 @@ Bugs
 • The first note isn't being played.
 • Pitch slides sound wrong in IT file.
 • IT speed is inconsistant.
-• Windows isn't creating IT files properly.
 
 More information
 ================

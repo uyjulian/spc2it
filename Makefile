@@ -8,8 +8,8 @@ OBJS = $(addprefix $(OBJDIR), emu.o it.o main.o sound.o spc700.o)
 COMMONFLAGS = 
 CFLAGS = $(COMMONFLAGS) -Wall -g 
 LDFLAGS = $(OBJS) -o $(EXENAME) $(COMMONFLAGS) -lm -g 
-LD = clang $(LDFLAGS) 
-CC = clang $(CFLAGS)
+LD = gcc $(LDFLAGS) 
+CC = gcc $(CFLAGS)
 
 .PHONY: clean all
 

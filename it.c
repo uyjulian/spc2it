@@ -142,7 +142,7 @@ s32 ITStart() // Opens up temporary file and inits writing
 {
 	SPCAddWriteDSPCallback(&ITWriteDSPCallback);
 	s32 i;
-	ittmp = fopen(IT_PATTERN_TEMP_FILE_NAME, "w+");
+	ittmp = fopen(IT_PATTERN_TEMP_FILE_NAME, "wb+");
 	if (ittmp == NULL)
 		return 1;
 	for (i = 0; i < NUM_PATT_BUFS; i++)
@@ -224,7 +224,7 @@ s32 ITWrite(char *fn) // Write the final IT file
 	ITpattlen[ITcurbuf++] = ITbufpos;
 	ITUpdate(); // Save the changes we just made
 	// END IT CLEANUP
-	f = fopen(fn, "w");
+	f = fopen(fn, "wb");
 	if (f == NULL)
 	{
 		printf("Error: could not open IT file\n");
@@ -275,7 +275,7 @@ s32 ITWrite(char *fn) // Write the final IT file
 	free(fHeader);
 	// orders
 	for (i = 0; i < curpatt; i++)
-		fputc(i, f); // Write from 0 to the number of patterns (max: 0xFE)
+		fputc(i, f); // Write from 0 to the number of patterns (max: 0xFD)
 	fputc(255, f); // terminating order
 	// Sample offsets
 	ofs = sizeof(ITFileHeader) + (curpatt + 1) + ((numsamps * sizeof(s32)) + (curpatt * sizeof(s32)));

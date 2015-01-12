@@ -33,7 +33,7 @@ static s32 LoadZState(char *fn)
 {
 	SPCFile *sFile = malloc(sizeof(SPCFile));
 	memset(sFile, 0, sizeof(SPCFile));
-	FILE *f = fopen(fn, "r");
+	FILE *f = fopen(fn, "rb");
 	if (f == NULL)
 	{
 		printf("Error: can't open file\n");
