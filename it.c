@@ -13,12 +13,13 @@
 
 itdata ITdata[8]; // Temp memory for patterns before going to file
 u8 *ITpattbuf[NUM_PATT_BUFS]; // Where patterns are going to be , before writing to file
+u8 *ITPatterns;
+u32 ITPatternsSize;
 s32 ITpattlen[NUM_PATT_BUFS]; // lengths of each pattern
 s32 ITcurbuf, ITbufpos, ITcurrow; // Pointers into temp pattern buffers
 s32 ITrows; // Number of rows per pattern
 
 static s32 offset[IT_PATTERN_MAX]; // table of offsets into temp file to each pattern
-static FILE *ittmp; // Temp file for mass pattern storage
 static s32 curpatt; // which pattern we are on in temp file
 static s32 curoffs; // where we are in file
 
@@ -142,17 +143,17 @@ s32 ITStart() // Opens up temporary file and inits writing
 {
 	SPCAddWriteDSPCallback(&ITWriteDSPCallback);
 	s32 i;
-	ittmp = fopen(IT_PATTERN_TEMP_FILE_NAME, "wb+");
-	if (ittmp == NULL)
-		return 1;
+
 	for (i = 0; i < NUM_PATT_BUFS; i++)
 	{
-		ITpattbuf[i] = malloc(65536);
+		ITpattbuf[i] = calloc(1, Mem64k - 8); //Don't include the 8 byte header
 		if (ITpattbuf[i] == NULL)
 			return 1;
 		ITpattlen[i] = 0;
 	}
 
+	ITPatterns = calloc(1, Mem64k * IT_PATTERN_MAX);
+	ITPatternsSize = 0;
 	ITcurbuf = 0;
 	ITbufpos = 0;
 	ITcurrow = 0;
@@ -178,14 +179,15 @@ s32 ITUpdate() // Dumps pattern buffers to file
 		offset[curpatt] = curoffs;
 		pHeader->Length = ITpattlen[i];
 		pHeader->Rows = ITrows;
-		fwrite(pHeader, sizeof(ITFilePattern), 1, ittmp);
-		fwrite(ITpattbuf[i], ITpattlen[i], 1, ittmp); // Write the pattern
+		memcpy(&ITPatterns[ITPatternsSize], pHeader, sizeof(ITFilePattern));
+		ITPatternsSize += sizeof(ITFilePattern);
+		memcpy(&ITPatterns[ITPatternsSize], ITpattbuf[i], ITpattlen[i]);
+		ITPatternsSize += ITpattlen[i];
 		curoffs += ITpattlen[i] + 8;
 		if (curpatt < IT_PATTERN_MAX) 
 			curpatt++; // Continue counting if we haven't reached the limit yet
 	}
 	free(pHeader);
-	fflush(ittmp);
 	tmpptr = ITpattbuf[0];
 	ITpattbuf[0] = ITpattbuf[ITcurbuf];
 	ITpattbuf[ITcurbuf] = tmpptr;
@@ -296,12 +298,8 @@ s32 ITWrite(char *fn) // Write the final IT file
 	for (i = 0; i < numsamps; i++)
 		ITSSave(SNDsamples[i], f);
 	// patterns
-	fseek(ittmp, 0, SEEK_SET);
-	while ((i = fgetc(ittmp)) != EOF)
-		fputc(i, f);
-	fclose(ittmp);
+	fwrite(ITPatterns, ITPatternsSize, 1, f);
 	fclose(f);
-	remove(IT_PATTERN_TEMP_FILE_NAME);
 	return 0;
 }
 

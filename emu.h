@@ -19,6 +19,4 @@ extern SPCFileInformation *SPCInfo;
 s32 SPCInit(char *);
 void SPCAddWriteDSPCallback(void (*ToAddCallback)(void));
 
-#define SPC_RUN() SPC_START(2048000 / SPCUpdateRate)
-
 #endif

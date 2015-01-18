@@ -19,6 +19,8 @@ typedef int64_t s64;
 
 typedef double f64;
 
+#define Mem64k (1024 * 64)
+
 typedef struct
 {
 	char magic[4]; // IMPM

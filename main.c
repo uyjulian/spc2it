@@ -99,7 +99,8 @@ int main(int argc, char **argv)
 		Usage();
 		exit(0);
 	}
-	printf("\nFilepath:            %s\n", fn);
+	printf("\n");
+	printf("Filepath:            %s\n", fn);
 	if (ITStart())
 	{
 		printf("Error: failed to init pattern buffers\n");
@@ -121,12 +122,7 @@ int main(int argc, char **argv)
 	else
 		limit = 60;
 
-	printf("Time (seconds):      ");
-
-	if (limit)
-		printf("%i\n", limit);
-	else
-		printf("none\n");
+	printf("Time (seconds):      %i\n", limit);
 
 	printf("IT Parameters:\n");
 	printf("    Rows/pattern:    %d\n", ITrows);
@@ -150,7 +146,6 @@ int main(int argc, char **argv)
 		if (ITUpdate())
 			break;
 		SNDMix(); // run the SPC
-
 
 		if (SNDratecnt >= SPCUpdateRate)
 		{
