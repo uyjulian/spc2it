@@ -211,10 +211,10 @@ s32 ITWrite(char *fn) // Write the final IT file
 	// Stop all notes and loop back to the beginning
 	for (i = 0; i < 15; i++) // Save the last channel to put loop in
 	{
-		pInfo->Channel = i | 128;
+		pInfo->Channel = (i + 1) | 128; // Channels are 1 based (Channels start at 1, not 0, ITTECH.TXT is WRONG) !!!
 		ITWritePattern(pInfo);
 	}
-	pInfo->Channel = 15 | 128;
+	pInfo->Channel = (15 + 1) | 128;
 	pInfo->Mask = 9; // 1001 (note, special command)
 	pInfo->Command = 2; // Effect B: jump to...
 	pInfo->CommandValue = 0; //...order 0 (Loop to beginning)
@@ -338,7 +338,7 @@ void ITMix()
 			}
 		}
 
-		pInfo->Channel = voice | 128;
+		pInfo->Channel = (voice + 1) | 128; //Channels here are 1 based!
 		pInfo->Mask = ITdata[voice].mask;
 		if (ITdata[voice].mask & IT_MASK_NOTE)
 			pInfo->Note = ITdata[voice].note;
@@ -384,7 +384,7 @@ void ITMix()
 			}
 		}
 		ITWritePattern(pInfo); // Write for left channel
-		pInfo->Channel = (voice + 8) | 128;
+		pInfo->Channel = (voice + 8 + 1) | 128;
 		if (ITdata[voice].mask & IT_MASK_ADJUSTVOLUME)
 			pInfo->Volume = (rvol > 64) ? 64 : rvol;
 		ITWritePattern(pInfo); // Write for right channel
