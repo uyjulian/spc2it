@@ -19,6 +19,8 @@ typedef int64_t s64;
 
 typedef double f64;
 
+typedef s16 pcm_t;
+
 #define OneKB (1024)
 
 #define Mem64k (OneKB * 64)

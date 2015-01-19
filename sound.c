@@ -14,6 +14,7 @@
 sndsamp *SNDsamples[IT_SAMPLE_MAX];
 sndvoice SNDvoices[8];
 s32 SNDkeys, SNDratecnt;
+pcm_t p1, p2;
 
 static const u32 C[0x20] = {
     0x0,    0x20000, 0x18000, 0x14000, 0x10000, 0xC000, 0xA000, 0x8000, 0x6000, 0x5000, 0x4000,
@@ -34,6 +35,59 @@ static sndsamp *NewSamp(s32 size)
 	return (s);
 }
 
+static s32 get_brr_prediction(u8 filter, pcm_t p1, pcm_t p2)
+{
+	s32 p;
+	switch (filter)
+	{
+	case 0:
+		return 0;
+
+	case 1:
+		p = p1;
+		p -= p1 >> 4;
+		return p;
+
+	case 2:
+		p = p1 << 1;
+		p += (-(p1 + (p1 << 1))) >> 5;
+		p -= p2;
+		p += p2 >> 4;
+		return p;
+
+	case 3:
+		p = p1 << 1;
+		p += (-(p1 + (p1 << 2) + (p1 << 3))) >> 6;
+		p -= p2;
+		p += (p2 + (p2 << 1)) >> 4;
+		return p;
+	}
+	return 0;
+}
+
+static void decodeSample(s8 s, u8 shift_am, u8 filter)
+{
+	s32 a;
+	if (shift_am <= 0x0c) // Valid shift count
+		a = ((s < 8 ? s : s - 16) << shift_am) >> 1;
+	else
+		a = s < 8 ? 1 << 11 : (-1) << 11; // Values "invalid" shift counts
+
+	a += get_brr_prediction(filter, p1, p2);
+
+	if (a > 0x7fff)
+		a = 0x7fff;
+	else if (a < -0x8000)
+		a = -0x8000;
+	if (a > 0x3fff)
+		a -= 0x8000;
+	else if (a < -0x4000)
+		a += 0x8000;
+
+	p2 = p1;
+	p1 = a;
+}
+
 static s32 decode_samp(u16 start, sndsamp **sp)
 {
 	sndsamp *s;
@@ -41,8 +95,7 @@ static s32 decode_samp(u16 start, sndsamp **sp)
 	u16 end;
 	u32 brrptr, sampptr = 0;
 	s32 i;
-	s32 output;
-	u8 range, filter;
+	u8 range, filter, shift_amount;
 	src = &SPCRAM[start];
 	for (end = 0; !(src[end] & 1); end += 9)
 		;
@@ -55,40 +108,14 @@ static s32 decode_samp(u16 start, sndsamp **sp)
 	for (brrptr = 0; brrptr <= end;)
 	{
 		range = src[brrptr++];
-		filter = (range & 12) >> 2;
-		range >>= 4;
+		filter = (range & 0x0c) >> 2;
+		shift_amount = (range >> 4) & 0x0F;
 		for (i = 0; i < 8; i++, brrptr++)
 		{
-			output = (src[brrptr] >> 4) & 0x0F;
-			if (output > 7)
-				output |= 0xFFFFFFF0;
-			output <<= range;
-			if (filter == 1)
-				output += (s32)((f64)s->buf[sampptr - 1] / 16 * 15);
-			else if (filter == 2)
-				output += (s32)(((f64)s->buf[sampptr - 1] * 61 / 32) - ((f64)s->buf[sampptr - 2] * 15 / 16));
-			else if (filter == 3)
-				output += (s32)(((f64)s->buf[sampptr - 1] * 115 / 64) - ((f64)s->buf[sampptr - 2] * 13 / 16));
-			if (output > 32767)
-				output = 32767;
-			else if (output < -32768)
-				output = -32768;
-			s->buf[sampptr++] = output;
-			output = src[brrptr] & 0x0F;
-			if (output > 7)
-				output |= 0xFFFFFFF0;
-			output <<= range;
-			if (filter == 1)
-				output += (s32)((f64)s->buf[sampptr - 1] / 16 * 15);
-			else if (filter == 2)
-				output += (s32)(((f64)s->buf[sampptr - 1] * 61 / 32) - ((f64)s->buf[sampptr - 2] * 15 / 16));
-			else if (filter == 3)
-				output += (s32)(((f64)s->buf[sampptr - 1] * 115 / 64) - ((f64)s->buf[sampptr - 2] * 13 / 16));
-			if (output > 32767)
-				output = 32767;
-			else if (output < -32768)
-				output = -32768;
-			s->buf[sampptr++] = output;
+			decodeSample(src[brrptr] >> 4, shift_amount, filter); // Decode high nybble
+			s->buf[sampptr++] = 2 * p1;
+			decodeSample(src[brrptr] & 0x0F, shift_amount, filter); // Decode low nybble
+			s->buf[sampptr++] = 2 * p1;
 		}
 	}
 	return 0;
@@ -235,7 +262,7 @@ s32 SNDDoEnv(s32 voice)
 			if (cyc > c)
 			{
 				SNDvoices[voice].envcyc += c;
-				envx -= 0x2000000; // sub 1/64th
+				envx -= 0x2000000;     // sub 1/64th
 				if (envx > 0x7F000000) // underflow
 				{
 					SNDvoices[voice].envcyc = TotalCycles;
@@ -362,7 +389,7 @@ void SNDNoteOff(u8 v)
 s32 SNDInit()
 {
 	s32 i;
-	SNDkeys = 0; // Which voices are keyed on (none)
+	SNDkeys = 0;            // Which voices are keyed on (none)
 	for (i = 0; i < 8; i++) // 8 voices
 	{
 		SNDvoices[i].sampptr = -1;

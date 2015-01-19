@@ -16,7 +16,6 @@ Enter the executable's path in the command line, then press enter to see the syn
 Bugs
 ====
 
-• Pitch slides sound wrong in IT file.
 • IT speed is inconsistant.
 
 More information
