@@ -6,6 +6,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <limits.h>
+#include <stdbool.h>
 
 #include "sound.h"
 #include "it.h"
@@ -69,7 +70,7 @@ void CheckSizes() {
 int main(int argc, char **argv)
 {
 	CheckSizes();
-	s32 seconds, limit, done;
+	s32 seconds, limit;
 	char fn[PATH_MAX];
 	s32 i;
 	fn[0] = 0;
@@ -138,9 +139,10 @@ int main(int argc, char **argv)
 
 	fflush(stdout);
 
-	seconds = SNDratecnt = done = 0;
-
-	while (!done)
+	seconds = SNDratecnt = 0;
+	SNDNoteOn(SPC_DSP[0x4c]);
+	SNDNoteOn(SPC_DSP[0x4c]);
+	while (true)
 	{
 		ITMix();
 		if (ITUpdate())

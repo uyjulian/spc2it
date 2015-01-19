@@ -19,7 +19,9 @@ typedef int64_t s64;
 
 typedef double f64;
 
-#define Mem64k (1024 * 64)
+#define OneKB (1024)
+
+#define Mem64k (OneKB * 64)
 
 typedef struct
 {
@@ -146,7 +148,7 @@ typedef struct
 	s32 ave;
 	u32 envx, envcyc;
 	s32 envstate;
-	s32 ar, dr, sl, sr, gn;
+	u32 ar, dr, sl, sr, gn;
 } sndvoice;
 
 #endif

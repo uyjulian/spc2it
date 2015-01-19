@@ -31,8 +31,12 @@ SPCFileInformation *SPCInfo;
 
 static s32 LoadZState(char *fn)
 {
-	SPCFile *sFile = malloc(sizeof(SPCFile));
-	memset(sFile, 0, sizeof(SPCFile));
+	SPCFile *sFile = calloc(1, sizeof(SPCFile));
+	if (sFile == NULL)
+	{
+		printf("Error: could not allocate memory for SPCFile struct\n");
+		exit(1);
+	}
 	FILE *f = fopen(fn, "rb");
 	if (f == NULL)
 	{
@@ -55,8 +59,12 @@ static s32 LoadZState(char *fn)
 	active_context->PSW = sFile->Registers.PSW;
 	memcpy(SPCRAM, sFile->RAM, 65536);
 	memcpy(SPC_DSP, sFile->DSPBuffer, 128);
-	SPCInfo = malloc(sizeof(SPCFileInformation));
-	memset(SPCInfo, 0, sizeof(SPCFileInformation));
+	SPCInfo = calloc(1, sizeof(SPCFileInformation));
+	if (SPCInfo == NULL)
+	{
+		printf("Error: could not allocate memory for SPCInfo struct\n");
+		exit(1);
+	}
 	memcpy(SPCInfo, &sFile->Information, sizeof(SPCFileInformation));
 	char songLen[4];
 	strncpy(songLen, SPCInfo->SongLength, 3);
@@ -125,10 +133,7 @@ void SPC_READ_DSP()
 
 void SPC_WRITE_DSP()
 {
-	if (SPC_Write_DSP_Hook)
-	{
-		(*SPC_Write_DSP_Hook)();
-	}
+
 	s32 i;
 	s32 addr_lo = SPC_DSP_ADDR & 0xF, addr_hi = SPC_DSP_ADDR >> 4;
 	switch (addr_lo)
@@ -199,6 +204,10 @@ void SPC_WRITE_DSP()
 		{
 		case 4: // Key on
 			SNDNoteOn(SPC_DSP_DATA);
+			if (SPC_Write_DSP_Hook)
+			{
+				(*SPC_Write_DSP_Hook)();
+			}
 			SPC_DSP_DATA = SNDkeys;
 			break;
 		case 5: // Key off

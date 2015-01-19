@@ -25,7 +25,7 @@ void ITMix();
 
 #define IT_PATTERN_TEMP_FILE_NAME "ittemp.tmp"
 #define IT_PATTERN_MAX 0xFD // The original Impulse Tracker has 200 patterns max
-#define IT_SAMPLE_MAX 99
+#define IT_SAMPLE_MAX 0xFF
 
 #define IT_MASK_NOTE 1 // 0001 (Note)
 #define IT_MASK_SAMPLE 2 // 0010 (Sample/instrument marker)

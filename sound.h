@@ -6,6 +6,7 @@
 #define SOUND_H
 
 #include "spc2ittypes.h"
+#include "it.h"
 
 #define ATTACK 0 // A of ADSR
 #define DECAY 1 // D of ADSR
@@ -17,7 +18,7 @@
 #define BENT 7 // GAIN bent line increase mode
 #define DIRECT 8 // Directly specify ENVX
 
-extern sndsamp *SNDsamples[100];
+extern sndsamp *SNDsamples[IT_SAMPLE_MAX];
 extern sndvoice SNDvoices[8];
 extern s32 SNDkeys, SNDratecnt;
 

@@ -11,7 +11,7 @@
 #include "sound.h"
 #include "it.h"
 
-sndsamp *SNDsamples[100];
+sndsamp *SNDsamples[IT_SAMPLE_MAX];
 sndvoice SNDvoices[8];
 s32 SNDkeys, SNDratecnt;
 
@@ -26,7 +26,7 @@ static const u32 C[0x20] = {
 static sndsamp *NewSamp(s32 size)
 {
 	sndsamp *s;
-	if (((s = malloc(sizeof(sndsamp))) == NULL) || ((s->buf = malloc(size * 2)) == NULL))
+	if (((s = calloc(1, sizeof(sndsamp))) == NULL) || ((s->buf = calloc(1, size * 2)) == NULL))
 		return (NULL);
 	s->length = size;
 	s->loopto = -1;
@@ -304,7 +304,7 @@ void SNDNoteOn(u8 v)
 		if (v & (1 << i))
 		{
 			cursamp = SPC_DSP[4 + (i << 4)];
-			if (cursamp <= 99) // Only 99 samples supported, sorry
+			if (cursamp < IT_SAMPLE_MAX)
 			{
 				if (SNDsamples[cursamp] == NULL)
 					update_samples(cursamp);
