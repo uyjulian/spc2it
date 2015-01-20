@@ -18,7 +18,6 @@
 #define BENT 7 // GAIN bent line increase mode
 #define DIRECT 8 // Directly specify ENVX
 
-extern sndsamp *SNDsamples[IT_SAMPLE_MAX];
 extern sndvoice SNDvoices[8];
 extern s32 SNDkeys, SNDratecnt;
 

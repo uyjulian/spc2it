@@ -9,9 +9,7 @@
 
 #include "spc2ittypes.h"
 
-extern s32 ITrows;
-
-s32 ITStart(); // Opens temp file, inits writing
+s32 ITStart(s32); // Opens temp file, inits writing
 s32 ITUpdate(); // Dumps pattern buffers to file
 s32 ITWrite(char *fn); // Stops recording and writes IT file from temp data
 void ITMix();
@@ -23,9 +21,8 @@ void ITMix();
 #define EFFECT_F 6
 #define EFFECT_E 5
 
-#define IT_PATTERN_TEMP_FILE_NAME "ittemp.tmp"
 #define IT_PATTERN_MAX 0xFD // The original Impulse Tracker has 200 patterns max
-#define IT_SAMPLE_MAX 0xFF
+#define IT_SAMPLE_MAX 0xFF // The original Impulse Tracker has 99 samples max
 
 #define IT_MASK_NOTE 1 // 0001 (Note)
 #define IT_MASK_SAMPLE 2 // 0010 (Sample/instrument marker)

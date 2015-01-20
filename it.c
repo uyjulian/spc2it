@@ -11,17 +11,135 @@
 #include "sound.h"
 #include "emu.h"
 
-itdata ITdata[8]; // Temp memory for patterns before going to file
-u8 *ITpattbuf[NUM_PATT_BUFS]; // Where patterns are going to be , before writing to file
-u8 *ITPatterns;
-u32 ITPatternsSize;
-s32 ITpattlen[NUM_PATT_BUFS]; // lengths of each pattern
-s32 ITcurbuf, ITbufpos, ITcurrow; // Pointers into temp pattern buffers
-s32 ITrows; // Number of rows per pattern
+static itdata ITdata[8]; // Temp memory for patterns before going to file
+static sndsamp *ITSamples[IT_SAMPLE_MAX];
+static u8 *ITpattbuf[NUM_PATT_BUFS]; // Where patterns are going to be , before writing to file
+static u8 *ITPatterns;
+static u32 ITPatternsSize;
+static s32 ITpattlen[NUM_PATT_BUFS]; // lengths of each pattern
+static s32 ITcurbuf, ITbufpos, ITcurrow; // Pointers into temp pattern buffers
+static s32 ITrows; // Number of rows per pattern
 
+static pcm_t p1, p2;
 static s32 offset[IT_PATTERN_MAX]; // table of offsets into temp file to each pattern
 static s32 curpatt; // which pattern we are on in temp file
 static s32 curoffs; // where we are in file
+
+static sndsamp *ITAllocateSample(s32 size)
+{
+	sndsamp *s;
+	if (((s = calloc(1, sizeof(sndsamp))) == NULL) || ((s->buf = calloc(1, size * 2)) == NULL))
+		return (NULL);
+	s->length = size;
+	s->loopto = -1;
+	s->freq = 0;
+	return (s);
+}
+
+static s32 ITGetBRRPrediction(u8 filter, pcm_t p1, pcm_t p2)
+{
+	s32 p;
+	switch (filter)
+	{
+	case 0:
+		return 0;
+
+	case 1:
+		p = p1;
+		p -= p1 >> 4;
+		return p;
+
+	case 2:
+		p = p1 << 1;
+		p += (-(p1 + (p1 << 1))) >> 5;
+		p -= p2;
+		p += p2 >> 4;
+		return p;
+
+	case 3:
+		p = p1 << 1;
+		p += (-(p1 + (p1 << 2) + (p1 << 3))) >> 6;
+		p -= p2;
+		p += (p2 + (p2 << 1)) >> 4;
+		return p;
+	}
+	return 0;
+}
+
+static void ITDecodeSampleInternal(s8 s, u8 shift_am, u8 filter)
+{
+	s32 a;
+	if (shift_am <= 0x0c) // Valid shift count
+		a = ((s < 8 ? s : s - 16) << shift_am) >> 1;
+	else
+		a = s < 8 ? 1 << 11 : (-1) << 11; // Values "invalid" shift counts
+
+	a += ITGetBRRPrediction(filter, p1, p2);
+
+	if (a > 0x7fff)
+		a = 0x7fff;
+	else if (a < -0x8000)
+		a = -0x8000;
+	if (a > 0x3fff)
+		a -= 0x8000;
+	else if (a < -0x4000)
+		a += 0x8000;
+
+	p2 = p1;
+	p1 = a;
+}
+
+static s32 ITDecodeSample(u16 start, sndsamp **sp)
+{
+	sndsamp *s;
+	u8 *src;
+	u16 end;
+	u32 brrptr, sampptr = 0;
+	s32 i;
+	u8 range, filter, shift_amount;
+	src = &SPCRAM[start];
+	for (end = 0; !(src[end] & 1); end += 9)
+		;
+	i = (end + 9) / 9 * 16;
+	*sp = s = ITAllocateSample(i);
+	if (s == NULL)
+		return 1;
+	if (src[end] & 2)
+		s->loopto = 0;
+	for (brrptr = 0; brrptr <= end;)
+	{
+		range = src[brrptr++];
+		filter = (range & 0x0c) >> 2;
+		shift_amount = (range >> 4) & 0x0F;
+		for (i = 0; i < 8; i++, brrptr++)
+		{
+			ITDecodeSampleInternal(src[brrptr] >> 4, shift_amount, filter); // Decode high nybble
+			s->buf[sampptr++] = 2 * p1;
+			ITDecodeSampleInternal(src[brrptr] & 0x0F, shift_amount, filter); // Decode low nybble
+			s->buf[sampptr++] = 2 * p1;
+		}
+	}
+	return 0;
+}
+
+static void ITUpdateSample(s32 s)
+{
+	s32 i;
+	struct
+	{
+		u16 vptr, lptr;
+	} *SRCDIR;
+	i = SPC_DSP[0x5D] << 8; //sample directory table...
+	SRCDIR = (void *)&SPCRAM[i];
+	if (ITDecodeSample(SRCDIR[s].vptr, &ITSamples[s]))
+		return;
+	if (ITSamples[s]->loopto != -1)
+	{
+		ITSamples[s]->loopto = (SRCDIR[s].lptr - SRCDIR[s].vptr) / 9 * 16;
+		if ((ITSamples[s]->loopto > ITSamples[s]->length) || (ITSamples[s]->loopto < 0))
+			ITSamples[s]->loopto = -1;
+	}
+}
 
 static s32 ITPitchToNote(s32 pitch, s32 base)
 {
@@ -58,14 +176,18 @@ static void ITWriteDSPCallback()
 			cursamp = SPC_DSP[4 + (i << 4)]; // Number of current sample
 			if (cursamp < IT_SAMPLE_MAX) // Only 99 samples supported, sorry
 			{
+				if (ITSamples[cursamp] == NULL)
+					ITUpdateSample(cursamp);
 				pitch = (s32)(*(u16 *)&SPC_DSP[(i << 4) + 2]) << 3; // Ext, Get pitch
-				if ((pitch != 0) && (SNDsamples[cursamp] != NULL) &&
-				    (SNDsamples[cursamp]->freq != 0)) // Ext, Sample is actually useful?
+				if (ITSamples[cursamp]->freq == 0)
+					ITSamples[cursamp]->freq = pitch;
+				if ((pitch != 0) && (ITSamples[cursamp] != NULL) &&
+				    (ITSamples[cursamp]->freq != 0)) // Ext, Sample is actually useful?
 				{
 					ITdata[i].mask |= IT_MASK_NOTE_SAMPLE_ADJUSTVOLUME; // Update note, sample, and adjust the volume.
-					ITdata[i].note = ITPitchToNote(pitch, SNDsamples[cursamp]->freq); // change pitch to note
+					ITdata[i].note = ITPitchToNote(pitch, ITSamples[cursamp]->freq); // change pitch to note
 					ITdata[i].pitch = (s32)(pow(2, ((f64)ITdata[i].note - 60) / 12) *
-					                        (f64)SNDsamples[cursamp]->freq); // needed for pitch slide detection
+					                        (f64)ITSamples[cursamp]->freq); // needed for pitch slide detection
 					ITdata[i].lvol = 0;
 					ITdata[i].rvol = 0;
 					// IT code will get sample from DSP buffer
@@ -143,10 +265,11 @@ static void ITWritePattern(ITPatternInfo *pInfo) {
 	}
 }
 
-s32 ITStart() // Opens up temporary file and inits writing
+s32 ITStart(s32 rows) // Opens up temporary file and inits writing
 {
 	SPCAddWriteDSPCallback(&ITWriteDSPCallback);
 	s32 i;
+	ITrows = rows;
 
 	for (i = 0; i < NUM_PATT_BUFS; i++)
 	{
@@ -261,15 +384,11 @@ s32 ITWrite(char *fn) // Write the final IT file
 	}
 	memcpy(fHeader->magic, "IMPM", 4);
 	if (SPCInfo->SongTitle[0])
-	{
 		strncpy(fHeader->songName, SPCInfo->SongTitle, 25);
-	}
 	else
-	{
 		strcpy(fHeader->songName, "spc2it conversion"); // default string
-	}
 	fHeader->OrderNumber = curpatt + 1; // number of orders + terminating order
-	for (numsamps = IT_SAMPLE_MAX + 1; SNDsamples[numsamps - 1] == NULL; numsamps--)
+	for (numsamps = IT_SAMPLE_MAX; ITSamples[numsamps - 1] == NULL; numsamps--)
 		; // Count the number of samples (the reason of the minus one is because c arrays start at 0)
 	numsamps++;
 	fHeader->SampleNumber = numsamps; // Number of samples
@@ -282,22 +401,14 @@ s32 ITWrite(char *fn) // Write the final IT file
 	fHeader->InitialSpeed = 1; // Initial speed (fastest)
 	fHeader->InitialTempo = (u8)(SPCUpdateRate * 2.5); // Initial tempo (determined by update rate)
 	fHeader->PanningSeperation = 128; // Stereo separation (max)
-	for (i = 0; i < 8; i++)
-	{ // Channel pan: Set 8 channels to left
-		fHeader->ChannelPan[i] = 0;
-	}
-	for (i = 8; i < 16; i++)
-	{ // Set 8 channels to right
-		fHeader->ChannelPan[i] = 64;
-	}
-	for (i = 16; i < 64; i++)
-	{ // Disable the rest of the channels (Value: +128)
-		fHeader->ChannelPan[i] = 128;
-	}
-	for (i = 0; i < 16; i++)
-	{ // Channel Vol: set 16 channels loud
-		fHeader->ChannelVolume[i] = 64;
-	}
+	for (i = 0; i < 8; i++) 
+		fHeader->ChannelPan[i] = 0; // Channel pan: Set 8 channels to left
+	for (i = 8; i < 16; i++) 
+		fHeader->ChannelPan[i] = 64; // Set 8 channels to right
+	for (i = 16; i < 64; i++) 
+		fHeader->ChannelPan[i] = 128; // Disable the rest of the channels (Value: +128)
+	for (i = 0; i < 16; i++) 
+		fHeader->ChannelVolume[i] = 64; // Channel Vol: set 16 channels loud
 	fwrite(fHeader, sizeof(ITFileHeader), 1, f);
 	free(fHeader);
 	// orders
@@ -310,8 +421,8 @@ s32 ITWrite(char *fn) // Write the final IT file
 	{
 		fwrite(&ofs, sizeof(s32), 1, f);
 		ofs += sizeof(ITFileSample);
-		if (SNDsamples[i] != NULL) // Sample is going to be put in file? Add the length of the sample.
-			ofs += (SNDsamples[i]->length * 2);
+		if (ITSamples[i] != NULL) // Sample is going to be put in file? Add the length of the sample.
+			ofs += (ITSamples[i]->length * 2);
 	}
 	// Pattern offsets
 	for (i = 0; i < curpatt; i++)
@@ -321,7 +432,7 @@ s32 ITWrite(char *fn) // Write the final IT file
 	}
 	// samples
 	for (i = 0; i < numsamps; i++)
-		ITSSave(SNDsamples[i], f);
+		ITSSave(ITSamples[i], f);
 	// patterns
 	fwrite(ITPatterns, ITPatternsSize, 1, f);
 	for (i = 0; i < NUM_PATT_BUFS; i++)
@@ -351,8 +462,6 @@ void ITMix()
 			rvol = (envx >> 24) * (s32)((s8)SPC_DSP[(voice << 4) + 0x01]) * mastervolume >> 14; // Ext
 
 			pitch = (s32)(*(u16 *)&SPC_DSP[(voice << 4) + 0x02]) << 3; // Pointer hell?
-			//pitch = (s32)(*(u16 *)&SPC_DSP[(voice << 4) + 0x02]) & 0x3FFF;
-			//pitch = (s32)(*(u16 *)&SPC_DSP[(voice << 4) + 0x02]) << 3;
 			// adjust for negative volumes
 			if (lvol < 0)
 				lvol = -lvol;

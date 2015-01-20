@@ -146,8 +146,6 @@ typedef struct
 
 typedef struct
 {
-	sndsamp *cursamp;
-	s32 sampptr;
 	s32 ave;
 	u32 envx, envcyc;
 	s32 envstate;

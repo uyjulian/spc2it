@@ -56,7 +56,7 @@ int main(int argc, char **argv)
 	size_t SPCFileSize = sizeof(SPCFile);
 	if (!(SPCFileSize == 65920))
 		printf("Warning: wrong size SPCFile: %lu \n", SPCFileSize);
-	s32 seconds, limit;
+	s32 seconds, limit, ITrows;
 	char fn[PATH_MAX];
 	s32 i;
 	fn[0] = 0;
@@ -93,7 +93,7 @@ int main(int argc, char **argv)
 	}
 	printf("\n");
 	printf("Filepath:            %s\n", fn);
-	if (ITStart())
+	if (ITStart(ITrows))
 	{
 		printf("Error: failed to initialize pattern buffers\n");
 		exit(1);

@@ -10,7 +10,6 @@
 #include "spc2ittypes.h"
 #include "sneese_spc.h"
 
-
 u8 SPC_DSP[256];
 u8 SPCRAM[65536];
 u32 Map_Address;
@@ -69,17 +68,11 @@ static s32 LoadZState(char *fn)
 	char songLen[4];
 	strncpy(songLen, SPCInfo->SongLength, 3);
 	if (songLen[0] >= 0)
-	{
 		SPCtime = atoi(songLen);
-	}
 	else
-	{
 		SPCtime = 0;
-	}
 	if (0 == (SPC_CTRL & 0x80))
-	{
 		active_context->FFC0_Address = SPCRAM;
-	}
 	active_context->timers[0].target = (u8)(SPCRAM[0xFA] - 1) + 1;
 	active_context->timers[1].target = (u8)(SPCRAM[0xFB] - 1) + 1;
 	active_context->timers[2].target = (u8)(SPCRAM[0xFC] - 1) + 1;
@@ -205,9 +198,7 @@ void SPC_WRITE_DSP()
 		case 4: // Key on
 			SNDNoteOn(SPC_DSP_DATA);
 			if (SPC_Write_DSP_Hook)
-			{
 				(*SPC_Write_DSP_Hook)();
-			}
 			SPC_DSP_DATA = SNDkeys;
 			break;
 		case 5: // Key off
