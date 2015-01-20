@@ -89,6 +89,7 @@ typedef struct
 	u8 Y;
 	u8 PSW;
 	u8 SP;
+	u8 Reserved[2];
 } SPCFileRegisters;
 
 typedef struct
@@ -101,19 +102,19 @@ typedef struct
 	char SongLength[3];
 	char FadeLength[5];
 	char Artist[32];
+	u8 ChannelDisabled;
+	u8 EmulatorDumpedWith; //0 unknown, 1 ZSNES, 2 Snes9x
+	u8 Reserved[45]; 
 } SPCFileInformation;
 
 typedef struct
 {
 	char FileTag[33]; // SNES-SPC700 Sound File Data v0.30
-	u8 FileTagTerminator[3]; // 30
-	u8 Version;
-	SPCFileRegisters Registers; // 7bytes
-	u8 Padding1[2];
+	u8 FileTagTerminator[2]; // 0x1A, 0x1A
+	u8 ContainsID666; // 0x1A for contains ID666, 0x1B for no ID666
+	u8 Version; //Version minor (30)
+	SPCFileRegisters Registers; // 9bytes
 	SPCFileInformation Information; // 163bytes
-	u8 ChannelDisabled;
-	u8 EmulatorDumpedWith;
-	u8 Padding2[45]; // total: 256
 	u8 RAM[65536];
 	u8 DSPBuffer[128];
 } SPCFile;

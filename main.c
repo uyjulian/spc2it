@@ -18,17 +18,8 @@
 #define realpath(N,R) _fullpath((R),(N),_MAX_PATH)
 #endif
 
-void Usage()
+int main(int argc, char **argv)
 {
-	printf("Usage: spc2it [options] <filename>\n");
-	printf("Where <filename> is any .spc or .sp# file\n\n");
-	printf("Available switches:\n");
-	printf("    -t x        Specify a time limit in seconds         [60 default]\n");
-	printf("    -d xxxxxxxx Voices to disable (1-8)                 [none default]\n");
-	printf("    -r xxx      Specify IT rows per pattern             [200 default]\n");
-}
-
-void CheckSizes() {
 	size_t u8Size = sizeof(u8);
 	if (!(u8Size == 1))
 		printf("Warning: wrong size u8: %lu \n", u8Size);
@@ -65,11 +56,6 @@ void CheckSizes() {
 	size_t SPCFileSize = sizeof(SPCFile);
 	if (!(SPCFileSize == 65920))
 		printf("Warning: wrong size SPCFile: %lu \n", SPCFileSize);
-}
-
-int main(int argc, char **argv)
-{
-	CheckSizes();
 	s32 seconds, limit;
 	char fn[PATH_MAX];
 	s32 i;
@@ -97,14 +83,19 @@ int main(int argc, char **argv)
 	}
 	if (fn[0] == 0)
 	{
-		Usage();
+		printf("Usage: spc2it [options] <filename>\n");
+		printf("Where <filename> is any .spc or .sp# file\n\n");
+		printf("Available switches:\n");
+		printf("    -t x        Specify a time limit in seconds         [60 default]\n");
+		printf("    -d xxxxxxxx Voices to disable (1-8)                 [none default]\n");
+		printf("    -r xxx      Specify IT rows per pattern             [200 default]\n");
 		exit(0);
 	}
 	printf("\n");
 	printf("Filepath:            %s\n", fn);
 	if (ITStart())
 	{
-		printf("Error: failed to init pattern buffers\n");
+		printf("Error: failed to initialize pattern buffers\n");
 		exit(1);
 	}
 	if (SPCInit(fn)) // Reset SPC and load state
@@ -114,7 +105,7 @@ int main(int argc, char **argv)
 	}
 	if (SNDInit())
 	{
-		printf("Error: init sound failed\n");
+		printf("Error: failed to initialize sound\n");
 		exit(1);
 	}
 
@@ -135,25 +126,24 @@ int main(int argc, char **argv)
 	printf("    Comments:        %s\n", SPCInfo->Comment);
 	printf("    Dumped on date:  %s\n", SPCInfo->Date);
 
-	printf("\n  Progress: \n");
+	printf("\n");
 
 	fflush(stdout);
 
 	seconds = SNDratecnt = 0;
-	SNDNoteOn(SPC_DSP[0x4c]);
-	SNDNoteOn(SPC_DSP[0x4c]);
 	while (true)
 	{
 		ITMix();
 		if (ITUpdate())
 			break;
-		SNDMix(); // run the SPC
+		SNDratecnt += 1;
+		SPC_START(2048000 / (SPCUpdateRate / 0.5)); // emulate the SPC700
 
 		if (SNDratecnt >= SPCUpdateRate)
 		{
 			SNDratecnt -= SPCUpdateRate;
 			seconds++; // count number of seconds
-			printf("%f ", (f64)seconds / limit);
+			printf("Progress: %f%% SRC: %u\r", (((f64)seconds / limit) * 100), SNDratecnt);
 			fflush(stdout);
 			if (seconds == limit)
 				break;

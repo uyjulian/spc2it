@@ -317,12 +317,6 @@ s32 SNDDoEnv(s32 voice)
 	}
 }
 
-void SNDMix()
-{
-	SNDratecnt++;
-	SPC_START(2048000 / SPCUpdateRate); // emulate the SPC700
-}
-
 void SNDNoteOn(u8 v)
 {
 	s32 i, cursamp, pitch, adsr1, adsr2, gain;

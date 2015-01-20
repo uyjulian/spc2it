@@ -23,7 +23,6 @@ extern sndvoice SNDvoices[8];
 extern s32 SNDkeys, SNDratecnt;
 
 s32 SNDDoEnv(s32);
-void SNDMix();
 void SNDNoteOn(u8);
 void SNDNoteOff(u8);
 s32 SNDInit();

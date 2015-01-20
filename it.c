@@ -280,7 +280,7 @@ s32 ITWrite(char *fn) // Write the final IT file
 	fHeader->GlobalVolume = 128; // Global volume
 	fHeader->MixVolume = 100; // Mix volume
 	fHeader->InitialSpeed = 1; // Initial speed (fastest)
-	fHeader->InitialTempo = (u8)(SPCUpdateRate * 1.25); // Initial tempo (determined by update rate)
+	fHeader->InitialTempo = (u8)(SPCUpdateRate * 2.5); // Initial tempo (determined by update rate)
 	fHeader->PanningSeperation = 128; // Stereo separation (max)
 	for (i = 0; i < 8; i++)
 	{ // Channel pan: Set 8 channels to left
@@ -340,16 +340,19 @@ void ITMix()
 		printf("Error: could not allocate memory for ITPatternInfo struct\n");
 		exit(1);
 	}
+	u8 mastervolume = SPC_DSP[0x0C];
 	for (voice = 0; voice < 8; voice++)
 	{
-		if (IT_EXTERN_ISVOICEON(voice))
+		if ((SNDkeys & (1 << voice)))
 		{
-			envx = IT_EXTERN_ENVX(voice);
-			lvol = IT_EXTERN_VOL(envx, voice, 0); // Ext
-			rvol = IT_EXTERN_VOL(envx, voice, 1); // Ext
+			envx = SNDDoEnv(voice);
+			//envx = SPC_DSP[0x08];
+			lvol = (envx >> 24) * (s32)((s8)SPC_DSP[(voice << 4)       ]) * mastervolume >> 14; // Ext
+			rvol = (envx >> 24) * (s32)((s8)SPC_DSP[(voice << 4) + 0x01]) * mastervolume >> 14; // Ext
 
-			pitch = IT_EXTERN_PITCH(voice); // Ext
-
+			pitch = (s32)(*(u16 *)&SPC_DSP[(voice << 4) + 0x02]) << 3; // Pointer hell?
+			//pitch = (s32)(*(u16 *)&SPC_DSP[(voice << 4) + 0x02]) & 0x3FFF;
+			//pitch = (s32)(*(u16 *)&SPC_DSP[(voice << 4) + 0x02]) << 3;
 			// adjust for negative volumes
 			if (lvol < 0)
 				lvol = -lvol;
@@ -376,7 +379,7 @@ void ITMix()
 		if (ITdata[voice].mask & IT_MASK_NOTE)
 			pInfo->Note = ITdata[voice].note;
 		if (ITdata[voice].mask & IT_MASK_SAMPLE)
-			pInfo->Sample = IT_EXTERN_SAMPLE(voice);
+			pInfo->Sample = SPC_DSP[(voice << 4) + 4] + 1;
 		if (ITdata[voice].mask & IT_MASK_ADJUSTVOLUME)
 			pInfo->Volume = (lvol > 64) ? 64 : lvol;
 		if (ITdata[voice].mask & IT_MASK_PITCHSLIDE)

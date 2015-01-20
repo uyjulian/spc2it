@@ -33,10 +33,4 @@ void ITMix();
 #define IT_MASK_NOTE_SAMPLE_ADJUSTVOLUME (IT_MASK_NOTE | IT_MASK_SAMPLE | IT_MASK_ADJUSTVOLUME)
 #define IT_MASK_PITCHSLIDE 8 // 1000 (some special command, we use effect F and effect E)
 
-#define IT_EXTERN_SAMPLE(v) (SPC_DSP[(v << 4) + 4] + 1)
-#define IT_EXTERN_ENVX(v) (SNDDoEnv(v))
-#define IT_EXTERN_VOL(e, v, o) ((((e >> 24) * (s32)((s8)SPC_DSP[(v << 4) + o]) * (s32)((s8)SPC_DSP[0x0C])) >> 14))
-#define IT_EXTERN_ISVOICEON(v) (SNDkeys & (1 << v))
-#define IT_EXTERN_PITCH(v) ((s32)(*(u16 *)&SPC_DSP[(v << 4) + 2]) << 3)
-
 #endif
