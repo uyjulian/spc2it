@@ -17,13 +17,13 @@ all: $(EXENAME)
 
 $(EXENAME): $(OBJDIR) $(OBJS)
 	$(LD)
-$(OBJDIR)emu.o: emu.c it.h emu.h sound.h sneese_spc.h spc2ittypes.h
+$(OBJDIR)emu.o: emu.c emu.h sound.h sneese_spc.h spc2ittypes.h
 	$(CC) -c emu.c -o $(OBJDIR)emu.o
 $(OBJDIR)it.o: it.c it.h emu.h sound.h sneese_spc.h spc2ittypes.h
 	$(CC) -c it.c -o $(OBJDIR)it.o
 $(OBJDIR)main.o: main.c it.h emu.h sound.h sneese_spc.h spc2ittypes.h
 	$(CC) -c main.c -o $(OBJDIR)main.o
-$(OBJDIR)sound.o: sound.c emu.h sound.h it.h sneese_spc.h spc2ittypes.h
+$(OBJDIR)sound.o: sound.c emu.h sound.h sneese_spc.h spc2ittypes.h
 	$(CC) -c sound.c -o $(OBJDIR)sound.o
 $(OBJDIR)spc700.o: spc700.c sneese_spc.h
 	$(CC) -c spc700.c -o $(OBJDIR)spc700.o

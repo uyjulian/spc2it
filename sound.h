@@ -6,7 +6,6 @@
 #define SOUND_H
 
 #include "spc2ittypes.h"
-#include "it.h"
 
 #define ATTACK 0 // A of ADSR
 #define DECAY 1 // D of ADSR

@@ -16,7 +16,7 @@ Enter the executable's path in the command line, then press enter to see the syn
 Bugs
 ====
 
-• IT speed is inconsistant.
+• None...
 
 More information
 ================

@@ -9,7 +9,6 @@
 
 #include "emu.h"
 #include "sound.h"
-#include "it.h"
 
 sndvoice SNDvoices[8];
 s32 SNDkeys, SNDratecnt;
