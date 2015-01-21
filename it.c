@@ -178,7 +178,7 @@ static void ITWriteDSPCallback()
 			{
 				if (ITSamples[cursamp] == NULL)
 					ITUpdateSample(cursamp);
-				pitch = (s32)(*(u16 *)&SPC_DSP[(i << 4) + 2]) << 3; // Ext, Get pitch
+				pitch = (s32)(*(u16 *)&SPC_DSP[(i << 4) + 0x02]) * 7.8125; // Ext, Get pitch
 				if (ITSamples[cursamp]->freq == 0)
 					ITSamples[cursamp]->freq = pitch;
 				if ((pitch != 0) && (ITSamples[cursamp] != NULL) &&
@@ -461,7 +461,7 @@ void ITMix()
 			lvol = (envx >> 24) * (s32)((s8)SPC_DSP[(voice << 4)       ]) * mastervolume >> 14; // Ext
 			rvol = (envx >> 24) * (s32)((s8)SPC_DSP[(voice << 4) + 0x01]) * mastervolume >> 14; // Ext
 
-			pitch = (s32)(*(u16 *)&SPC_DSP[(voice << 4) + 0x02]) << 3; // Pointer hell?
+			pitch = (s32)(*(u16 *)&SPC_DSP[(voice << 4) + 0x02]) * 7.8125; // Pointer hell?
 			// adjust for negative volumes
 			if (lvol < 0)
 				lvol = -lvol;
@@ -470,7 +470,7 @@ void ITMix()
 			// lets see if we need to pitch slide
 			if (pitch && ITdata[voice].pitch)
 			{
-				pitchslide = (s32)(log2((f64)pitch / (f64)ITdata[voice].pitch) * 768);
+				pitchslide = (s32)(log2((f64)pitch / (f64)ITdata[voice].pitch) * 768.0);
 				if (pitchslide)
 					ITdata[voice].mask |= IT_MASK_PITCHSLIDE; // enable pitch slide
 			}
