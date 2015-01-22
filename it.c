@@ -156,7 +156,7 @@ static s32 ITPitchToNote(s32 pitch, s32 base)
 	return note;
 }
 
-static void ITWriteDSPCallback()
+static void ITWriteDSPCallback(u8 v)
 {
 	s32 addr_lo = SPC_DSP_ADDR & 0xF;
 	s32 addr_hi = SPC_DSP_ADDR >> 4;
@@ -167,7 +167,6 @@ static void ITWriteDSPCallback()
 		return;
 
 	s32 i, cursamp, pitch;
-	u8 v = SPC_DSP_DATA; // Ext
 	v &= 0xFF; // ext
 	for (i = 0; i < 8; i++)
 	{

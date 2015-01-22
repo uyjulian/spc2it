@@ -130,6 +130,8 @@ int main(int argc, char **argv)
 
 	fflush(stdout);
 
+	SNDNoteOn(SPC_DSP[0x4c]);
+
 	seconds = SNDratecnt = 0;
 	while (true)
 	{
@@ -137,7 +139,7 @@ int main(int argc, char **argv)
 		if (ITUpdate())
 			break;
 		SNDratecnt += 1;
-		SPC_START(2048000 / (SPCUpdateRate / 0.5)); // emulate the SPC700
+		SPC_START(2048000 / (SPCUpdateRate * 2)); // emulate the SPC700
 
 		if (SNDratecnt >= SPCUpdateRate)
 		{

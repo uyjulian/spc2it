@@ -13,10 +13,11 @@ extern u32 SPC_DSP_DATA;
 
 extern s32 SPCtime;
 extern SPCFileInformation *SPCInfo;
+extern void (*SPC_Write_DSP_Hook)(u8);
 
 #define SPCUpdateRate 100
 
 s32 SPCInit(char *);
-void SPCAddWriteDSPCallback(void (*ToAddCallback)(void));
+void SPCAddWriteDSPCallback(void (*ToAddCallback)(u8));
 
 #endif

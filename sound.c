@@ -239,6 +239,8 @@ void SNDNoteOn(u8 v)
 				}
 			}
 		}
+	if (SPC_Write_DSP_Hook)
+		(*SPC_Write_DSP_Hook)(v);
 }
 
 void SNDNoteOff(u8 v)

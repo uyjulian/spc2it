@@ -22,7 +22,7 @@ u32 SPC_CPU_cycles;
 u32 SPC_CPU_cycles_mul;
 u32 sound_cycle_latch;
 
-void (*SPC_Write_DSP_Hook)(void); // function pointer
+void (*SPC_Write_DSP_Hook)(u8); // function pointer
 
 // ID tag stuff
 s32 SPCtime;
@@ -102,7 +102,7 @@ s32 SPCInit(char *fn)
 	return 0;
 }
 
-void SPCAddWriteDSPCallback(void (*ToAddCallback)(void))
+void SPCAddWriteDSPCallback(void (*ToAddCallback)(u8))
 {
 	SPC_Write_DSP_Hook = ToAddCallback;
 }
@@ -197,8 +197,6 @@ void SPC_WRITE_DSP()
 		{
 		case 4: // Key on
 			SNDNoteOn(SPC_DSP_DATA);
-			if (SPC_Write_DSP_Hook)
-				(*SPC_Write_DSP_Hook)();
 			SPC_DSP_DATA = SNDkeys;
 			break;
 		case 5: // Key off
