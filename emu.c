@@ -125,9 +125,7 @@ void SPC_READ_DSP()
 }
 
 void SPC_WRITE_DSP()
-{
-
-	s32 i;
+{	
 	s32 addr_lo = SPC_DSP_ADDR & 0xF, addr_hi = SPC_DSP_ADDR >> 4;
 	switch (addr_lo)
 	{
@@ -135,8 +133,9 @@ void SPC_WRITE_DSP()
 		SPC_DSP_DATA &= 0x3F;
 		break;
 	case 5: // ADSR1
-		if ((SNDkeys & (1 << addr_hi)) && ((SPC_DSP_DATA & 0x80) != (SPC_DSP[SPC_DSP_ADDR] & 0x80)))
+		if ((SPC_DSP[0x4C] & (1 << addr_hi)) && ((SPC_DSP_DATA & 0x80) != (SPC_DSP[SPC_DSP_ADDR] & 0x80)))
 		{
+			s32 i;
 			// First of all, in case anything was already
 			// going on, finish it up
 			SNDDoEnv(addr_hi);
@@ -174,7 +173,7 @@ void SPC_WRITE_DSP()
 		SNDvoices[addr_hi].sl = SPC_DSP_DATA >> 5;
 		break;
 	case 7: // GAIN
-		if ((SNDkeys & (1 << addr_hi)) && (SPC_DSP_DATA != SPC_DSP[SPC_DSP_ADDR]) &&
+		if ((SPC_DSP[0x4C] & (1 << addr_hi)) && (SPC_DSP_DATA != SPC_DSP[SPC_DSP_ADDR]) &&
 		    !(SPC_DSP[(addr_hi << 4) + 5] & 0x80))
 		{
 			if (SPC_DSP_DATA & 0x80)
@@ -197,7 +196,7 @@ void SPC_WRITE_DSP()
 		{
 		case 4: // Key on
 			SNDNoteOn(SPC_DSP_DATA);
-			SPC_DSP_DATA = SNDkeys;
+			SPC_DSP_DATA = SPC_DSP[0x4C];
 			break;
 		case 5: // Key off
 			SNDNoteOff(SPC_DSP_DATA);

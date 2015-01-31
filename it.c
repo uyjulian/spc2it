@@ -96,7 +96,6 @@ static s32 ITDecodeSample(u16 start, sndsamp **sp)
 	u16 end;
 	u32 brrptr, sampptr = 0;
 	s32 i;
-	u8 range, filter, shift_amount;
 	src = &SPCRAM[start];
 	for (end = 0; !(src[end] & 1); end += 9)
 		;
@@ -108,9 +107,9 @@ static s32 ITDecodeSample(u16 start, sndsamp **sp)
 		s->loopto = 0;
 	for (brrptr = 0; brrptr <= end;)
 	{
-		range = src[brrptr++];
-		filter = (range & 0x0c) >> 2;
-		shift_amount = (range >> 4) & 0x0F;
+		u8 range = src[brrptr++];
+		u8 filter = (range & 0x0c) >> 2;
+		u8 shift_amount = (range >> 4) & 0x0F;
 		for (i = 0; i < 8; i++, brrptr++)
 		{
 			ITDecodeSampleInternal(src[brrptr] >> 4, shift_amount, filter); // Decode high nybble
@@ -151,7 +150,7 @@ static s32 ITPitchToNote(s32 pitch, s32 base)
 	else if (tmp < 0)
 		tmp = 0;
 	note = (s32)tmp;
-	if ((s32)(tmp * 2) != (note << 1))
+	if ((s32)(tmp * 2) != (note * 2))
 		note++; // correct rounding
 	return note;
 }
@@ -453,12 +452,13 @@ void ITMix()
 	u8 mastervolume = SPC_DSP[0x0C];
 	for (voice = 0; voice < 8; voice++)
 	{
-		if ((SNDkeys & (1 << voice)))
+		if ((SPC_DSP[0x4C] & (1 << voice))) // 0x4C == key on
 		{
 			envx = SNDDoEnv(voice);
-			//envx = SPC_DSP[0x08];
 			lvol = (envx >> 24) * (s32)((s8)SPC_DSP[(voice << 4)       ]) * mastervolume >> 14; // Ext
 			rvol = (envx >> 24) * (s32)((s8)SPC_DSP[(voice << 4) + 0x01]) * mastervolume >> 14; // Ext
+			// Volume no echo: (s32)((s8)SPC_DSP[(voice << 4)       ]) * mastervolume >> 7;
+
 
 			pitch = (s32)(*(u16 *)&SPC_DSP[(voice << 4) + 0x02]) * 7.8125; // Pointer hell?
 			// adjust for negative volumes

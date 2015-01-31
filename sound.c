@@ -11,7 +11,7 @@
 #include "sound.h"
 
 sndvoice SNDvoices[8];
-s32 SNDkeys, SNDratecnt;
+s32 SNDratecnt;
 
 static const u32 C[0x20] = {
     0x0,    0x20000, 0x18000, 0x14000, 0x10000, 0xC000, 0xA000, 0x8000, 0x6000, 0x5000, 0x4000,
@@ -23,11 +23,11 @@ static const u32 C[0x20] = {
 
 s32 SNDDoEnv(s32 voice)
 {
-	u32 envx, cyc, c;
+	u32 envx, c;
 	envx = SNDvoices[voice].envx;
 	for (;;)
 	{
-		cyc = TotalCycles - SNDvoices[voice].envcyc;
+		u32 cyc = TotalCycles - SNDvoices[voice].envcyc;
 		switch (SNDvoices[voice].envstate)
 		{
 		case ATTACK:
@@ -104,7 +104,7 @@ s32 SNDDoEnv(s32 voice)
 				envx -= 0x800000; // sub 1/256th
 				if ((envx == 0) || (envx > 0x7F000000))
 				{
-					SNDkeys &= ~(1 << voice);
+					SPC_DSP[0x4C] &= ~(1 << voice);
 					return SNDvoices[voice].envx = 0;
 				}
 			}
@@ -206,7 +206,7 @@ void SNDNoteOn(u8 v)
 			cursamp = SPC_DSP[4 + (i << 4)];
 			if (cursamp < 512)
 			{
-				SNDkeys |= (1 << i);
+				SPC_DSP[0x4C] |= (1 << i);
 				// figure ADSR/GAIN
 				adsr1 = SPC_DSP[(i << 4) + 5];
 				if (adsr1 & 0x80)
@@ -257,7 +257,6 @@ void SNDNoteOff(u8 v)
 s32 SNDInit()
 {
 	s32 i;
-	SNDkeys = 0;
 	for (i = 0; i < 8; i++)
 		SNDvoices[i].envx = 0;
 	return (0);
