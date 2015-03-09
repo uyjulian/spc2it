@@ -460,7 +460,7 @@ void ITMix()
 			// Volume no echo: (s32)((s8)SPC_DSP[(voice << 4)       ]) * mastervolume >> 7;
 
 
-			pitch = (s32)(*(u16 *)&SPC_DSP[(voice << 4) + 0x02]) * 7.8125; // Pointer hell?
+			pitch = (s32)(*(u16 *)&SPC_DSP[(voice << 4) + 0x02]) * 7.8125; // This code merges 2 numbers together, high and low 8 bits, to make 16 bits.
 			// adjust for negative volumes
 			if (lvol < 0)
 				lvol = -lvol;

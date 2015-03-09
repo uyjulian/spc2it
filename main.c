@@ -145,7 +145,7 @@ int main(int argc, char **argv)
 		{
 			SNDratecnt -= SPCUpdateRate;
 			seconds++; // count number of seconds
-			printf("Progress: %f%% SRC: %u\r", (((f64)seconds / limit) * 100), SNDratecnt);
+			printf("Progress: %f%%\r", (((f64)seconds / limit) * 100));
 			fflush(stdout);
 			if (seconds == limit)
 				break;
