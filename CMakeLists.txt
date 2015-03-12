@@ -14,3 +14,4 @@ set(spc2it_sources
 )
 
 add_executable(spc2it ${spc2it_sources})
+target_link_libraries(spc2it m)
