@@ -6,7 +6,9 @@ Convert SPC files to IT (Impulse Tracker) files.
 Compiling
 =========
 
-Just run make. You might need to modify the makefile if you have a different compiler, such as Clang, or MSVC.
+You need cmake.
+
+> mkdir b && cd b && cmake .. && make
 
 Running
 =======
