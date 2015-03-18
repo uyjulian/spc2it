@@ -391,7 +391,7 @@ s32 ITWrite(char *fn) // Write the final IT file
 	numsamps++;
 	fHeader->SampleNumber = numsamps; // Number of samples
 	fHeader->PatternNumber = curpatt; // Number of patterns
-	fHeader->TrackerCreatorVersion = 0x214; // Created with this tracker version
+	fHeader->TrackerCreatorVersion = 0xDAEB; // Created with this tracker version
 	fHeader->TrackerFormatVersion = 0x200; // Compatible with this tracker version
 	fHeader->Flags = 9; // Flags: Stereo, Linear Slides
 	fHeader->GlobalVolume = 128; // Global volume
