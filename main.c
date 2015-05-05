@@ -83,12 +83,13 @@ int main(int argc, char **argv)
 	}
 	if (fn[0] == 0)
 	{
-		printf("Usage: spc2it [options] <filename>\n");
-		printf("Where <filename> is any .spc or .sp# file\n\n");
-		printf("Available switches:\n");
-		printf("    -t x        Specify a time limit in seconds         [60 default]\n");
-		printf("    -d xxxxxxxx Voices to disable (1-8)                 [none default]\n");
-		printf("    -r xxx      Specify IT rows per pattern             [200 default]\n");
+		printf(" SPC2IT - converts SPC700 sound files to the Impulse Tracker format\n\n");
+		printf(" Usage:  spc2it [options] <filename>\n");
+		printf(" Where <filename> is any .spc or .sp# file\n\n");
+		printf(" Options: ");
+		printf("-t x        Specify a time limit in seconds        [60 default]\n");
+		printf("          -d xxxxxxxx Voices to disable (1-8)                [none default]\n");
+		printf("          -r xxx      Specify IT rows per pattern            [200 default]\n");
 		exit(0);
 	}
 	printf("\n");
@@ -120,11 +121,11 @@ int main(int argc, char **argv)
 	printf("    Rows/pattern:    %d\n", ITrows);
 
 	printf("ID info:\n");
-	printf("    Song name:       %s\n", SPCInfo->SongTitle);
-	printf("    Game name:       %s\n", SPCInfo->GameTitle);
-	printf("    Dumper:          %s\n", SPCInfo->DumperName);
-	printf("    Comments:        %s\n", SPCInfo->Comment);
-	printf("    Dumped on date:  %s\n", SPCInfo->Date);
+	printf("        Song:  %s\n", SPCInfo->SongTitle);
+	printf("        Game:  %s\n", SPCInfo->GameTitle);
+	printf("      Dumper:  %s\n", SPCInfo->DumperName);
+	printf("    Comments:  %s\n", SPCInfo->Comment);
+	printf("  Created on:  %s\n", SPCInfo->Date);
 
 	printf("\n");
 
