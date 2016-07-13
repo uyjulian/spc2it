@@ -1,27 +1,22 @@
-SPC2IT
-======
+SPC2IT (Moonscript branch)
+===================
 
-Convert SPC files to IT (Impulse Tracker) files.
-
-Compiling
-=========
-
-You need cmake.
-
-> mkdir b && cd b && cmake .. && make
+This is the Moonscript branch. All the latest unstable changes to SPC2IT are here.
 
 Running
 =======
 
-Enter the executable's path in the command line, then press enter to see the syntax.
+LuaJIT 2.1.0-beta2 or later + Moonscript is REQUIRED for this lua branch.  
+You can run `luarocks install moonscript` to install moonscript. Be sure to edit `moon` so that it points to luajit.  
+Run `moon main.moon` for more information.
 
-Bugs
-====
+License
+=======
+The SNEeSe SPC700 core is licensed under The Clarified Artistic License.  
+All other code in this repo is licensed under the GPL v2 or higher.
 
-• None...
+More information / Help
+=======================
 
-More information
-================
-
-For more information, read the documentation in ./doc/
-Also, see http://www.romhacking.net/forum/index.php?topic=10164.0
+For more information, please read the documentation in the doc folder.  
+Also, if you want help and support, visit http://www.romhacking.net/forum/index.php?topic=20492.0  

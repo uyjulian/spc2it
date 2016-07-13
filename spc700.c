@@ -411,7 +411,7 @@ static u8 SPC_READ_RAM(u16 address)
 
 static u8 SPC_READ_DSP_DATA(u16 address)
 {
-	SPC_READ_DSP();
+	(*SPC_READ_DSP)();
 
 	/* read from DSP register */
 	/* DSP address bit 7 ignored during reads only! */
@@ -568,7 +568,7 @@ static void SPC_WRITE_DSP_DATA(u16 address, u8 data)
 	SPC_DSP_DATA = data;
 
 	/* write to DSP register */
-	SPC_WRITE_DSP();
+	(*SPC_WRITE_DSP)();
 }
 
 void SPC_WRITE_PORT_W(u16 address, u8 data)
@@ -727,7 +727,7 @@ void Reset_SPC(void)
 
 void SPC_SHOW_REGISTERS(void)
 {
-	DisplaySPC();
+	(*DisplaySPC)();
 }
 
 u8 get_SPC_PSW(void)
@@ -3479,7 +3479,7 @@ static void Execute_SPC(void)
 			/* Adjust address to correct for increment */
 			Map_Address = (_PC - 1) & 0xFFFF;
 			save_cycles_spc();  /* Set cycle counter */
-			InvalidSPCOpcode(); /* This exits.. aviods conflict with other things! */
+			(*InvalidSPCOpcode)(); /* This exits.. aviods conflict with other things! */
 			load_cycles_spc();
 			break;
 		}

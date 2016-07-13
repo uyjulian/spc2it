@@ -21,7 +21,17 @@ the file './doc/LICENSE_SNEESE' in this directory for more information.
 #if !defined(_SNEESE_SPC_H)
 #define _SNEESE_SPC_H
 
-#include "spc2ittypes.h"
+#include <stdint.h>
+
+typedef uint8_t u8;
+typedef uint16_t u16;
+typedef uint32_t u32;
+typedef uint64_t u64;
+
+typedef int8_t s8;
+typedef int16_t s16;
+typedef int32_t s32;
+typedef int64_t s64;
 
 /*========== DEFINES ==========*/
 
@@ -85,18 +95,19 @@ typedef struct
 
 /*========== VARIABLES ==========*/
 
-/* SPCimpl.c variables */
-extern u8 In_CPU;
-extern u32 Map_Address;
-extern u32 Map_Byte;
-extern u32 SPC_CPU_cycle_divisor;
-extern u32 SPC_CPU_cycle_multiplicand;
-extern u32 SPC_CPU_cycles;
-extern u32 SPC_CPU_cycles_mul;
-extern u8 SPC_DSP[256];
-extern u32 SPC_DSP_DATA;
-extern u8 SPCRAM[65536];
-extern u32 sound_cycle_latch;
+/* SPCimpl.c variables (now included in this file) */
+
+u8 In_CPU;
+u32 Map_Address;
+u32 Map_Byte;
+u32 SPC_CPU_cycle_divisor;
+u32 SPC_CPU_cycle_multiplicand;
+u32 SPC_CPU_cycles;
+u32 SPC_CPU_cycles_mul;
+u8 SPC_DSP[256];
+u32 SPC_DSP_DATA;
+u8 SPCRAM[65536];
+u32 sound_cycle_latch;
 
 /* spc700.c variables */
 extern SPC700_CONTEXT *active_context;
@@ -110,13 +121,10 @@ extern SPC700_CONTEXT *active_context;
 /*========== PROCEDURES ==========*/
 
 /* SPCimpl.c procedures */
-void DisplaySPC(void);
-
-void InvalidSPCOpcode(void);
-
-void SPC_READ_DSP(void);
-
-void SPC_WRITE_DSP(void);
+void (*DisplaySPC)(void);
+void (*InvalidSPCOpcode)(void);
+void (*SPC_READ_DSP)(void);
+void (*SPC_WRITE_DSP)(void);
 
 /* spc700.c procedures */
 void Reset_SPC(void);
