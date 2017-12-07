@@ -158,7 +158,10 @@ int main(int argc, char **argv)
 			break;
 	for (; i > 0; i--)
 		if (fn[i] == '.')
+		{
 			strcpy(&fn[i + 1], "it");
+			break;
+		}
 	if (ITWrite(fn))
 		printf("Error: failed to write %s.\n", fn);
 	else
