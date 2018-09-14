@@ -10,6 +10,13 @@ You need cmake.
 
 > mkdir b && cd b && cmake .. && make
 
+Installing
+==========
+
+FreeBSD
+-------
+> pkg install spc2it
+
 Running
 =======
 
