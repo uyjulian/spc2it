@@ -6,7 +6,7 @@ This is the Moonscript branch. All the latest unstable changes to SPC2IT are her
 Running
 =======
 
-LuaJIT 2.1.0-beta2 or later + Moonscript is REQUIRED for this lua branch.  
+LuaJIT 2.1.0-beta3 or later + Moonscript is REQUIRED for this lua branch.  
 You can run `luarocks install moonscript` to install moonscript. Be sure to edit `moon` so that it points to luajit.  
 Run `moon main.moon` for more information.
 
