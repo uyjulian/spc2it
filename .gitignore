@@ -5,3 +5,5 @@ Thumbs.db
 *.spc
 *.it
 lol
+build
+build-*
