@@ -96,7 +96,7 @@ jobs:
   create-release:
     needs: [build-ubuntu, build-win32, build-macos]
     runs-on: ubuntu-20.04
-    if: github.ref == 'refs/heads/master'
+    if: startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/master'
     steps:
     - name: Download ubuntu artifact
       uses: actions/download-artifact@v1
