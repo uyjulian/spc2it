@@ -19,6 +19,11 @@ if target_machine.system() == 'windows'
 		'-static',
 	]
 endif
+if target_machine.system() == 'linux'
+	spc2it_ldflags += [
+		'-lm',
+	]
+endif
 
 spc2it_src = [
 	'emu.c',
