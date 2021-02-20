@@ -19,7 +19,7 @@ if target_machine.system() == 'windows'
 		'-static',
 	]
 endif
-if target_machine.system() == 'linux'
+if target_machine.system() == 'linux' or target_machine.system() == 'freebsd'
 	spc2it_ldflags += [
 		'-lm',
 	]
