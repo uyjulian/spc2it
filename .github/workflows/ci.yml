@@ -28,7 +28,7 @@ jobs:
           submodules: recursive
       - run: sudo apt-get update
       - run: sudo apt-get install build-essential
-      - uses: actions/setup-python@v1
+      - uses: actions/setup-python@v5
         with:
           python-version: '3.x'
       - uses: actions/cache@v1
@@ -54,7 +54,7 @@ jobs:
       - run: sudo apt-get install build-essential mingw-w64
       - run: sudo update-alternatives --set i686-w64-mingw32-gcc /usr/bin/i686-w64-mingw32-gcc-posix
       - run: sudo update-alternatives --set i686-w64-mingw32-g++ /usr/bin/i686-w64-mingw32-g++-posix
-      - uses: actions/setup-python@v1
+      - uses: actions/setup-python@v5
         with:
           python-version: '3.x'
       - uses: actions/cache@v1
@@ -76,7 +76,7 @@ jobs:
       - uses: actions/checkout@v2
         with:
           submodules: recursive
-      - uses: actions/setup-python@v1
+      - uses: actions/setup-python@v5
         with:
           python-version: '3.x'
       - uses: actions/cache@v1
