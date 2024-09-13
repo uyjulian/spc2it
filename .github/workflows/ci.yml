@@ -102,16 +102,19 @@ jobs:
       uses: actions/download-artifact@v4
       with:
         name: spc2it-ubuntu
+        path: spc2it-ubuntu
 
     - name: Download win32 artifact
       uses: actions/download-artifact@v4
       with:
         name: spc2it-win32
+        path: spc2it-win32
 
     - name: Download macos artifact
       uses: actions/download-artifact@v4
       with:
         name: spc2it-macos
+        path: spc2it-macos
 
     - name: Prepare artifacts for release
       run: |
