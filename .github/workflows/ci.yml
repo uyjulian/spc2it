@@ -1,231 +1,267 @@
 {
-  "name": "Continuous Integration",
-  "on": {
-    "push": {
-      "paths": [
+  "name" : "Continuous Integration",
+  "on" : {
+    "push" : {
+      "paths" : [
         "**.c",
         "**.h",
         "**.cpp",
         "**.hpp",
         "**.build",
         "**.in",
-        "**.yml"
+        "**.yml",
+        "**.gradle",
+        "CMakeLists.txt"
       ]
     },
-    "pull_request": {
-      "paths": [
+    "pull_request" : {
+      "paths" : [
         "**.c",
         "**.h",
         "**.cpp",
         "**.hpp",
         "**.build",
         "**.in",
-        "**.yml"
+        "**.yml",
+        "**.gradle",
+        "CMakeLists.txt"
       ]
     }
   },
-  "env": {
-    "CMAKE_GENERATOR": "Ninja",
-    "HOMEBREW_NO_ANALYTICS": "1",
-    "HOMEBREW_NO_AUTO_UPDATE": "1",
-    "HOMEBREW_NO_INSTALL_UPGRADE": "1",
-    "HOMEBREW_NO_INSTALL_CLEANUP": "1",
-    "DEBIAN_FRONTEND": "noninteractive",
-    "TZ": "Japan"
+  "env" : {
+    "CMAKE_GENERATOR" : "Ninja",
+    "HOMEBREW_NO_ANALYTICS" : "1",
+    "HOMEBREW_NO_AUTO_UPDATE" : "1",
+    "HOMEBREW_NO_INSTALL_UPGRADE" : "1",
+    "HOMEBREW_NO_INSTALL_CLEANUP" : "1",
+    "DEBIAN_FRONTEND" : "noninteractive",
+    "TZ" : "Japan"
   },
-  "jobs": {
-    "build-ubuntu": {
-      "runs-on": "ubuntu-latest",
-      "timeout-minutes": 20,
-      "container": {
-        "image": "ubuntu:20.04",
-        "options": "--user 0"
+  "jobs" : {
+    "build-ubuntu" : {
+      "runs-on" : "ubuntu-latest",
+      "timeout-minutes" : 20,
+      "container" : {
+        "image" : "ubuntu:20.04",
+        "options" : "--user 0"
       },
-      "steps": [
+      "steps" : [
         {
-          "run": "apt-get -y update && apt-get -y -o Dpkg::Options::='--force-confdef' -o Dpkg::Options::='--force-confold' install build-essential git"
+          "name" : "Set up base environment",
+          "run" : "apt-get -y update && apt-get -y -o Dpkg::Options::='--force-confdef' -o Dpkg::Options::='--force-confold' install build-essential p7zip-full cmake git ninja-build"
         },
         {
-          "uses": "actions/checkout@v4",
-          "with": {
-            "submodules": "recursive"
+          "uses" : "actions/checkout@v4",
+          "with" : {
+            "submodules" : "recursive"
           }
         },
         {
-          "uses": "actions/setup-python@v5",
-          "with": {
-            "python-version": "3.13.3"
-          }
+          "name" : "Mark all git directories safe",
+          "run" : "git config --global --add safe.directory '*'"
         },
         {
-          "uses": "actions/cache@v3",
-          "with": {
-            "path": "~/.cache/pip",
-            "key": "${{ runner.os }}-pip",
-            "restore-keys": "${{ runner.os }}-pip\n"
-          }
+          "name" : "Configure project",
+          "run" : "cmake -S . -B build"
         },
         {
-          "run": "python -m pip install --upgrade meson ninja"
+          "name" : "Build project",
+          "run" : "cmake --build build"
         },
         {
-          "run": "meson setup build/"
+          "name" : "Prepare artifacts for release",
+          "run" : "7z a -tzip ${{ github.event.repository.name }}-ubuntu.zip build/${{ github.event.repository.name }}"
         },
         {
-          "run": "meson compile -C build"
-        },
-        {
-          "uses": "actions/upload-artifact@v4",
-          "with": {
-            "name": "${{ github.event.repository.name }}-ubuntu",
-            "path": "build/spc2it"
+          "uses" : "actions/upload-artifact@v4",
+          "with" : {
+            "name" : "${{ github.event.repository.name }}-ubuntu",
+            "path" : "${{ github.event.repository.name }}-ubuntu.zip"
           }
         }
       ]
     },
-    "build-win32": {
-      "runs-on": "ubuntu-latest",
-      "timeout-minutes": 20,
-      "container": {
-        "image": "ubuntu:20.04",
-        "options": "--user 0"
+    "build-win32" : {
+      "runs-on" : "ubuntu-latest",
+      "timeout-minutes" : 20,
+      "container" : {
+        "image" : "ghcr.io/homebrew/ubuntu20.04:latest",
+        "options" : "--user 0"
       },
-      "steps": [
+      "strategy" : {
+        "fail-fast" : false,
+        "matrix" : {
+          "platform" : [
+            {
+              "triplet" : "i686-w64-mingw32",
+              "cmake-system-compiler" : "i686",
+              "compiler" : "gcc"
+            },
+            {
+              "triplet" : "x86_64-w64-mingw32",
+              "cmake-system-compiler" : "amd64",
+              "compiler" : "gcc"
+            },
+            {
+              "triplet" : "i686-w64-mingw32",
+              "cmake-system-compiler" : "i686",
+              "compiler" : "clang"
+            },
+            {
+              "triplet" : "x86_64-w64-mingw32",
+              "cmake-system-compiler" : "amd64",
+              "compiler" : "clang"
+            },
+            {
+              "triplet" : "armv7-w64-mingw32",
+              "cmake-system-compiler" : "arm",
+              "compiler" : "clang"
+            },
+            {
+              "triplet" : "aarch64-w64-mingw32",
+              "cmake-system-compiler" : "arm64",
+              "compiler" : "clang"
+            }
+          ]
+        }
+      },
+      "steps" : [
         {
-          "run": "apt-get -y update && apt-get -y -o Dpkg::Options::='--force-confdef' -o Dpkg::Options::='--force-confold' install build-essential mingw-w64 git"
-        },
-        {
-          "uses": "actions/checkout@v4",
-          "with": {
-            "submodules": "recursive"
+          "uses" : "actions/checkout@v4",
+          "with" : {
+            "submodules" : "recursive"
           }
         },
         {
-          "run": "update-alternatives --set i686-w64-mingw32-gcc /usr/bin/i686-w64-mingw32-gcc-posix"
+          "name" : "Mark all git directories safe",
+          "run" : "git config --global --add safe.directory '*'"
         },
         {
-          "run": "update-alternatives --set i686-w64-mingw32-g++ /usr/bin/i686-w64-mingw32-g++-posix"
+          "name" : "Set up base environment",
+          "run" : "apt-get -y update && apt-get -y -o Dpkg::Options::='--force-confdef' -o Dpkg::Options::='--force-confold' install build-essential"
         },
         {
-          "uses": "actions/setup-python@v5",
-          "with": {
-            "python-version": "3.13.3"
-          }
+          "name" : "Set up Homebrew environment for Github Actions",
+          "run" : "printf '%s\\n' '/home/linuxbrew/.linuxbrew/bin:/home/linuxbrew/.linuxbrew/sbin' >> $GITHUB_PATH"
         },
         {
-          "uses": "actions/cache@v3",
-          "with": {
-            "path": "~/.cache/pip",
-            "key": "${{ runner.os }}-pip",
-            "restore-keys": "${{ runner.os }}-pip\n"
-          }
+          "name" : "Set up default build tools",
+          "run" : "sudo -H -E -u linuxbrew bash -c 'cd /home/linuxbrew && /home/linuxbrew/.linuxbrew/bin/brew install p7zip make nasm ninja cmake'"
         },
         {
-          "run": "python -m pip install --upgrade meson ninja"
+          "name" : "Set up mingw-w64 for GCC",
+          "if" : "matrix.platform.compiler == 'gcc'",
+          "run" : "sudo -H -E -u linuxbrew bash -c 'cd /home/linuxbrew && /home/linuxbrew/.linuxbrew/bin/brew install mingw-w64'"
         },
         {
-          "run": "meson setup build/ --cross-file ./external/meson_toolchains/mingw32_meson.ini"
+          "name" : "Set up mingw-w64 for Clang",
+          "if" : "matrix.platform.compiler == 'clang'",
+          "run" : "curl -LO https://github.com/mstorsjo/llvm-mingw/releases/download/20220323/llvm-mingw-20220323-msvcrt-ubuntu-18.04-x86_64.tar.xz\ntar xvf llvm-mingw-20220323-msvcrt-ubuntu-18.04-x86_64.tar.xz\nmv llvm-mingw-20220323-msvcrt-ubuntu-18.04-x86_64 /opt/llvm-mingw\nexport PATH=\"/opt/llvm-mingw/bin:$PATH\"\necho \"/opt/llvm-mingw/bin\" >> $GITHUB_PATH"
         },
         {
-          "run": "meson compile -C build"
+          "name" : "Configure project",
+          "run" : "cmake -S . -B build -GNinja -DCMAKE_SYSTEM_NAME=Windows -DCMAKE_SYSTEM_PROCESSOR=${{ matrix.platform.cmake-system-compiler }} -DCMAKE_FIND_ROOT_PATH=/dev/null -DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER -DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY -DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=ONLY -DCMAKE_C_COMPILER=${{ matrix.platform.triplet }}-gcc -DCMAKE_CXX_COMPILER=${{ matrix.platform.triplet }}-g++ -DCMAKE_RC_COMPILER=${{ matrix.platform.triplet }}-windres -DCMAKE_BUILD_TYPE=Release"
         },
         {
-          "uses": "actions/upload-artifact@v4",
-          "with": {
-            "name": "${{ github.event.repository.name }}-win32",
-            "path": "build/spc2it.exe"
+          "name" : "Build project",
+          "run" : "cmake --build build"
+        },
+        {
+          "name" : "Prepare artifacts for release",
+          "run" : "7z a -tzip ${{ github.event.repository.name }}-win32-${{ matrix.platform.cmake-system-compiler }}-${{ matrix.platform.compiler }}.zip build/${{ github.event.repository.name }}.exe"
+        },
+        {
+          "uses" : "actions/upload-artifact@v4",
+          "with" : {
+            "name" : "${{ github.event.repository.name }}-win32-${{ matrix.platform.cmake-system-compiler }}-${{ matrix.platform.compiler }}",
+            "path" : "${{ github.event.repository.name }}-win32-${{ matrix.platform.cmake-system-compiler }}-${{ matrix.platform.compiler }}.zip"
           }
         }
       ]
     },
-    "build-macos": {
-      "runs-on": "macos-latest",
-      "timeout-minutes": 20,
-      "steps": [
+    "build-macos" : {
+      "runs-on" : "macos-latest",
+      "timeout-minutes" : 20,
+      "strategy" : {
+        "fail-fast" : false
+      },
+      "steps" : [
         {
-          "uses": "actions/checkout@v4",
-          "with": {
-            "submodules": "recursive"
+          "uses" : "actions/checkout@v4",
+          "with" : {
+            "submodules" : "recursive"
           }
         },
         {
-          "uses": "actions/setup-python@v5",
-          "with": {
-            "python-version": "3.x"
+          "uses" : "actions/setup-python@v5",
+          "with" : {
+            "python-version" : "3.x"
           }
         },
         {
-          "uses": "actions/cache@v3",
-          "with": {
-            "path": "~/.cache/pip",
-            "key": "${{ runner.os }}-pip",
-            "restore-keys": "${{ runner.os }}-pip\n"
+          "uses" : "actions/cache@v4",
+          "with" : {
+            "path" : "~/.cache/pip",
+            "key" : "${{ runner.os }}-pip",
+            "restore-keys" : "${{ runner.os }}-pip"
           }
         },
         {
-          "run": "python -m pip install --upgrade meson ninja"
+          "run" : "python -m pip install --upgrade ninja"
         },
         {
-          "run": "meson setup build/"
+          "run" : "cmake -S . -B build"
         },
         {
-          "run": "meson compile -C build"
+          "run" : "cmake --build build"
         },
         {
-          "uses": "actions/upload-artifact@v4",
-          "with": {
-            "name": "${{ github.event.repository.name }}-macos",
-            "path": "build/spc2it"
+          "name" : "Prepare artifacts for release",
+          "run" : "7z a -tzip ${{ github.event.repository.name }}-macos.zip build/${{ github.event.repository.name }}"
+        },
+        {
+          "uses" : "actions/upload-artifact@v4",
+          "with" : {
+            "name" : "${{ github.event.repository.name }}-macos",
+            "path" : "${{ github.event.repository.name }}-macos.zip"
           }
         }
       ]
     },
-    "create-release": {
-      "needs": [
-        "build-ubuntu",
-        "build-win32",
-        "build-macos"
-      ],
-      "runs-on": "ubuntu-latest",
-      "timeout-minutes": 20,
-      "container": {
-        "image": "ubuntu:20.04",
-        "options": "--user 0"
+    "create-release" : {
+      "needs" : ["build-ubuntu", "build-win32", "build-macos"],
+      "runs-on" : "ubuntu-latest",
+      "timeout-minutes" : 20,
+      "container" : {
+        "image" : "ubuntu:20.04",
+        "options" : "--user 0"
       },
-      "if": "startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/master'",
-      "steps": [
+      "if" : "github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v')",
+      "steps" : [
         {
-          "name": "Download all artifact",
-          "uses": "actions/download-artifact@v4"
+          "name" : "Download all artifacts",
+          "uses" : "actions/download-artifact@v4"
         },
         {
-          "name": "Set up p7zip",
-          "run": "apt-get -y update && apt-get -y -o Dpkg::Options::='--force-confdef' -o Dpkg::Options::='--force-confold' install p7zip-full"
-        },
-        {
-          "name": "Prepare artifacts for release",
-          "run": "7z a -tzip ${{ github.event.repository.name }}-ubuntu.zip ${{ github.event.repository.name }}-ubuntu/*\n7z a -tzip ${{ github.event.repository.name }}-win32.zip ${{ github.event.repository.name }}-win32/*\n7z a -tzip ${{ github.event.repository.name }}-macos.zip ${{ github.event.repository.name }}-macos/*\n"
-        },
-        {
-          "name": "Create prerelease",
-          "if": "github.ref == 'refs/heads/master'",
-          "uses": "marvinpinto/action-automatic-releases@latest",
-          "with": {
-            "repo_token": "${{ secrets.GITHUB_TOKEN }}",
-            "prerelease": true,
-            "automatic_release_tag": "latest",
-            "title": "Latest development builds",
-            "files": "${{ github.event.repository.name }}-ubuntu.zip\n${{ github.event.repository.name }}-win32.zip\n${{ github.event.repository.name }}-macos.zip\n"
+          "name" : "Create release",
+          "if" : "startsWith(github.ref, 'refs/tags/v')",
+          "uses" : "marvinpinto/action-automatic-releases@latest",
+          "with" : {
+            "repo_token" : "${{ secrets.GITHUB_TOKEN }}",
+            "prerelease" : "${{ contains(github.ref, '-rc') }}",
+            "files" : "**/**.zip"
           }
         },
         {
-          "name": "Create release",
-          "if": "startsWith(github.ref, 'refs/tags/v')",
-          "uses": "marvinpinto/action-automatic-releases@latest",
-          "with": {
-            "repo_token": "${{ secrets.GITHUB_TOKEN }}",
-            "prerelease": "${{ contains(github.ref, '-rc') }}",
-            "files": "${{ github.event.repository.name }}-ubuntu.zip\n${{ github.event.repository.name }}-win32.zip\n${{ github.event.repository.name }}-macos.zip\n"
+          "name" : "Create prerelease",
+          "if" : "github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'",
+          "uses" : "marvinpinto/action-automatic-releases@latest",
+          "with" : {
+            "repo_token" : "${{ secrets.GITHUB_TOKEN }}",
+            "prerelease" : "true",
+            "automatic_release_tag" : "latest",
+            "title" : "Latest development builds",
+            "files" : "**/**.zip"
           }
         }
       ]
