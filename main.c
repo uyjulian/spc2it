@@ -132,6 +132,7 @@ int main(int argc, char **argv)
 	fflush(stdout);
 
 	SNDNoteOn(SPC_DSP[0x4c]);
+	ITPrimeActiveVoices();
 
 	seconds = SNDratecnt = 0;
 	while (true)
