@@ -155,16 +155,8 @@ static s32 ITPitchToNote(s32 pitch, s32 base)
 	return note;
 }
 
-static void ITWriteDSPCallback(u8 v)
+static void ITCaptureKeyOnMask(u8 v)
 {
-	s32 addr_lo = SPC_DSP_ADDR & 0xF;
-	s32 addr_hi = SPC_DSP_ADDR >> 4;
-	if (!(addr_lo == 12))
-		return;
-
-	if (!(addr_hi == 4))
-		return;
-
 	s32 i, cursamp, pitch;
 	v &= 0xFF; // ext
 	for (i = 0; i < 8; i++)
@@ -176,11 +168,12 @@ static void ITWriteDSPCallback(u8 v)
 			{
 				if (ITSamples[cursamp] == NULL)
 					ITUpdateSample(cursamp);
+				if (ITSamples[cursamp] == NULL)
+					continue;
 				pitch = (s32)(*(u16 *)&SPC_DSP[(i << 4) + 0x02]) * 7.8125; // Ext, Get pitch
 				if (ITSamples[cursamp]->freq == 0)
 					ITSamples[cursamp]->freq = pitch;
-				if ((pitch != 0) && (ITSamples[cursamp] != NULL) &&
-				    (ITSamples[cursamp]->freq != 0)) // Ext, Sample is actually useful?
+				if ((pitch != 0) && (ITSamples[cursamp]->freq != 0)) // Ext, Sample is actually useful?
 				{
 					ITdata[i].mask |= IT_MASK_NOTE_SAMPLE_ADJUSTVOLUME; // Update note, sample, and adjust the volume.
 					ITdata[i].note = ITPitchToNote(pitch, ITSamples[cursamp]->freq); // change pitch to note
@@ -193,6 +186,23 @@ static void ITWriteDSPCallback(u8 v)
 			}
 		}
 	}
+}
+
+static void ITWriteDSPCallback(u8 v)
+{
+	s32 addr_lo = SPC_DSP_ADDR & 0xF;
+	s32 addr_hi = SPC_DSP_ADDR >> 4;
+	if (!(addr_lo == 12))
+		return;
+
+	if (!(addr_hi == 4))
+		return;
+	ITCaptureKeyOnMask(v);
+}
+
+void ITPrimeActiveVoices()
+{
+	ITCaptureKeyOnMask(SPC_DSP[0x4C]);
 }
 
 static void ITSSave(sndsamp *s, FILE *f) // Save sample
